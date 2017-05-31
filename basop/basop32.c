@@ -121,6 +121,14 @@ HISTORY:
  |   Include-Files                                                           |
  |___________________________________________________________________________|
 */
+#ifdef __FXAPI__
+
+#include <basop32.h>
+#ifdef WORKAROUND_BASOP
+#include "basicop_n.h"
+#endif
+#else
+
 #include <stdio.h>
 #include <stdlib.h>
 #include "stl.h"
@@ -2603,6 +2611,7 @@ Word32 L_msu0 (Word32 L_var3, Word16 var1, Word16 var2)
   return(L_var_out);
 }
 
+#endif //FXAPI
 
 /* end of file */
 

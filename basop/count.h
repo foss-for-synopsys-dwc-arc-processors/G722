@@ -59,8 +59,8 @@
 
 #ifndef _COUNT_H
 #define _COUNT_H "$Id$"
-#define WMOPS 1		    /* enable WMOPS profiling features  */
-/* #undef WMOPS	*/		/* disable WMOPS profiling features */
+/*#define WMOPS 1*/		    /* enable WMOPS profiling features  */
+ #undef WMOPS			/* disable WMOPS profiling features */
 #define MAXCOUNTERS (256)
 
 int getCounterId( char *objectName);

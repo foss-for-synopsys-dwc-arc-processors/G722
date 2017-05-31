@@ -28,6 +28,7 @@
 #endif
 #endif
 
+#ifndef _ARC
 /*   Types definitions */
 #if defined(__BORLANDC__) || defined (__WATCOMC__) || defined(_MSC_VER) || defined(__TURBOC__)
 typedef  long  int   Word32;
@@ -40,12 +41,12 @@ typedef short Word16;
 typedef int   Word32;
 #endif
 
-#define MAX_32 (Word32)0x7fffffffL
-#define MIN_32 (Word32)0x80000000L
+//#define MAX_32 (Word32)0x7fffffffL
+//#define MIN_32 (Word32)0x80000000L
 
-#define MAX_16 (Word16)0x7fff
-#define MIN_16 (Word16)0x8000
-
+//#define MAX_16 (Word16)0x7fff
+//#define MIN_16 (Word16)0x8000
+#endif
 /*   Operator prototypes */
 #ifdef OLD_WAY
 Word16 add();     /* Short add,           1 */

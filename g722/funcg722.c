@@ -49,7 +49,14 @@ History:
 
 /* Include state variable definition, function and operator prototypes */
 #include "g722.h"
+#ifdef __FXAPI__
 
+#include <basop32.h>
+#ifdef WORKAROUND_BASOP
+#include "basicop_n.h"
+#endif
+
+#endif
 /*___________________________________________________________________________
                                                                             
     Function Name : lsbcod                                                  

@@ -93,19 +93,19 @@ char *argv[];
     exit (0);
   }
 
-  if ((cod = fopen (argv[1], "r+b")) == NULL)
+  if ((cod = fopen (argv[1], "rb")) == NULL)
   {
     printf ("TESTD64K ne peut pas ouvrir %s \n", argv[1]);
     exit (0);
   }
 
-  if ((rcl = fopen (argv[2], "r+b")) == NULL)
+  if ((rcl = fopen (argv[2], "rb")) == NULL)
   {
     printf ("TESTD64K ne peut pas ouvrir %s \n", argv[2]);
     exit (0);
   }
 
-  if ((rch = fopen (argv[3], "r+b")) == NULL)
+  if ((rch = fopen (argv[3], "rb")) == NULL)
   {
     printf ("TESTD64K ne peut pas ouvrir %s \n", argv[3]);
     exit (0);
@@ -152,7 +152,9 @@ char *argv[];
   printf ("\n***************************************************************");
   printf ("\n\n  BEGINING OF PROCESSING INPUT FILE %s : REF_L %s  REF_H %s\n",
 	  argv[1], argv[2], argv[3]);
-
+#ifdef __FXAPI__
+  fx_init_dsp_mode();
+#endif
   while ((read1 = fread (&incode, sizeof (Word16), 1, cod)) == 1)
   {
 

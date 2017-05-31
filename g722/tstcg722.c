@@ -83,13 +83,13 @@ char *argv[];
     exit (0);
   }
 
-  if ((xmt = fopen (argv[1], "r+b")) == NULL)
+  if ((xmt = fopen (argv[1], "rb")) == NULL)
   {
     printf ("TSTG722 ne peut pas ouvrir %s \n", argv[1]);
     exit (0);
   }
 
-  if ((cod = fopen (argv[2], "r+b")) == NULL)
+  if ((cod = fopen (argv[2], "rb")) == NULL)
   {
     printf ("TSTG722 ne peut pas ouvrir %s \n", argv[2]);
     exit (0);
@@ -99,7 +99,9 @@ char *argv[];
 
   printf ("\n\n  BEGINING OF PROCESSING INPUT FILE %s : REFERENCE %s \n",
 	  argv[1], argv[2]);
-
+#ifdef __FXAPI__
+  fx_init_dsp_mode();
+#endif
   xl = xh = rs = 1;
   il = lsbcod (xl, rs, &encoder);
   ih = hsbcod (xl, rs, &encoder);

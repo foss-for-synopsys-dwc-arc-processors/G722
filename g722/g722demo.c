@@ -70,7 +70,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <math.h>
+//#include <math.h>
 
 #ifdef VMS
 #include <stat.h>
@@ -87,6 +87,15 @@ void display_usage ARGS((void));
 
 /* Local definitions */
 #define DFT_BLK 1024
+
+#ifdef _ARC
+//#include <arc/arc_intrinsics.h>
+#include <arc/arc_timer.h>
+#include <stdint.h>
+#include "arc_profile.h"
+#include "helper_lib.h"
+#include "rt_checks.h"
+#endif
 
 
 /*
@@ -138,6 +147,9 @@ void display_usage()
 #undef P
 /* .................... End of display_usage() ........................... */
 
+#if defined (NATIVE_CYCLE_PROFILING) 
+Application_Settings_t app_settings = {0};
+#endif
 
 /*
    **************************************************************************
@@ -172,7 +184,7 @@ char *argv[];
   Word16   *inp_buf, *cod_buf, *out_buf;
 
   /* File variables */
-  char            FileIn[80], FileOut[80];
+  char            FileIn[256], FileOut[256];
   FILE           *inp, *out;
   int             read1;
   long            iter=0;
@@ -185,6 +197,10 @@ char *argv[];
   /* Progress flag indicator */
   static char     quiet=0, funny[9] = "|/-\\|/-\\";
 
+#ifdef NATIVE_CYCLE_PROFILING
+  mem_set_context(&app_settings);
+  profile_init(&app_settings, &argc, argv);
+#endif
 
   /* *** ......... PARAMETERS FOR PROCESSING ......... *** */
 
@@ -280,14 +296,14 @@ char *argv[];
   start_byte = sizeof(short) * (long) (--N1) * (long) N;
 
   /* Check if is to process the whole file */
-  if (N2 == 0)
-  {
-    struct stat     st;
+  //if (N2 == 0)
+  //{
+  //  struct stat     st;
 
-    /* ... find the input file size ... */
-    stat(FileIn, &st);
-    N2 = (long)ceil((st.st_size - start_byte) / (double)(N * sizeof(short)));
-  }
+  //  /* ... find the input file size ... */
+  //  stat(FileIn, &st);
+  //  N2 = (long)ceil((st.st_size - start_byte) / (double)(N * sizeof(short)));
+  //}
 
   /* Protect mode, if misgiven */
   if (mode < 1 || mode > 3)
@@ -366,17 +382,79 @@ char *argv[];
 	     bitstream samples
      ***
    */
+#ifdef NATIVE_CYCLE_PROFILING
+  profile_preprocess(&app_settings);
+   if ((decode)&&(encode))
+   {
+       printf("\n ERROR: Profiling can used only for encoder or only for decoder. Use key -enc or -dec in command line for choose one from them \n");
+       exit(1);
+   }
+
+  
+  
+
+#endif
   while ((read1 = fread(incode, sizeof (short), N, inp)) != 0)
   {
     /* print progress flag */
     if (!quiet)
       fprintf(stderr, "%c\r", funny[(iter/read1) % 8]);
 
+#ifdef PROFILING_CODEC_SAMPLES
+        _timer0_reset();
+#endif
+
     if (encode)
     {
+#ifdef PROFILING_CODEC_SAMPLES
+        static uint32_t print_header_encoder=1;
+        uint32_t timer0;
+        timer0=_timer0_read();
+#endif
+
+#ifdef NATIVE_CYCLE_PROFILING
+        
+            unsigned bytes_ps = 2;
+            unsigned sample_rate = 16000;
+            unsigned channels=1;
+            unsigned blocksize=read1;
+            unsigned size = blocksize*(bytes_ps)*channels;
+            if(sample_rate != app_settings.stream_config.sample_rate || bytes_ps != app_settings.stream_config.sample_size)
+            {
+                app_settings.stream_config.stream_name = FileIn;
+                app_settings.stream_config.stream_type = 0;
+                app_settings.stream_config.component_class = ARC_API_CLASS_ENCODER;
+                app_settings.stream_config.sample_rate =sample_rate;
+                app_settings.stream_config.sample_size = bytes_ps;
+                app_settings.stream_config.bit_rate = 0;
+                app_settings.stream_config.num_ch =channels;
+                app_settings.stream_config.codec_instance_size = sizeof(g722_state *);
+            }
+            app_settings.rt_stats.microseconds_per_frame = (unsigned)1000000*blocksize/sample_rate;
+            app_settings.rt_stats.used_input_buffer = size;
+        
+        profile_frame_preprocess(&app_settings);
+#endif
+
       /* Encode */
       smpno = g722_encode(inp_buf, code, read1, &encoder);
       
+#ifdef NATIVE_CYCLE_PROFILING
+        profile_frame_postprocess(&app_settings);
+#endif
+
+#ifdef PROFILING_CODEC_SAMPLES
+      timer0=_timer0_read()-timer0;
+      double number =ceil((double)16000/ read1);
+      if (print_header_encoder)
+      {
+          printf("HEADER ENCODER: block_size=%d \n",read1);
+          print_header_encoder=0;
+      }
+      //double number=10;
+      //printf("timer %d\t mips %.2f \n",(timer0-encoder->private_->time_read),(((double)(timer0-encoder->private_->time_read)*number)/(1000000)));
+      printf("timer_E %d\t E_mips %.2f \t",(timer0),(((double)(timer0)*number)/(1000000)));
+#endif      
       /* Modify read1 to the expected number of encoded bitstream samples */
       read1 /= 2;
 
@@ -387,17 +465,69 @@ char *argv[];
 
     if (decode)
     {
+#ifdef PROFILING_CODEC_SAMPLES
+        static uint32_t print_header_decoder=1;
+        uint32_t timer0;
+        //decoder->private_->time_read=0;
+        timer0=_timer0_read();
+#endif
+
+#ifdef NATIVE_CYCLE_PROFILING
+        profile_frame_preprocess(&app_settings);
+#endif
       /* Decode */
       smpno = g722_decode(cod_buf, outcode, mode, (short)read1, &decoder);
 
+ 
       /* Modify read1 to the expected no.of decoded reconstructed samples */
       read1 *= 2;
 
+#ifdef NATIVE_CYCLE_PROFILING
+     
+          unsigned bytes_ps = 2;
+          unsigned sample_rate = 16000;
+          unsigned channels=1;
+          unsigned blocksize=read1;
+          unsigned size = blocksize*(bytes_ps)*channels;
+
+          if(sample_rate != app_settings.stream_config.sample_rate || bytes_ps != app_settings.stream_config.sample_size)
+          { 
+              app_settings.stream_config.stream_name =  FileIn;
+              app_settings.stream_config.stream_type = 0;
+              app_settings.stream_config.component_class = ARC_API_CLASS_DECODER;
+              app_settings.stream_config.sample_rate = sample_rate;
+              app_settings.stream_config.sample_size = bytes_ps;
+              app_settings.stream_config.bit_rate = 0;
+              app_settings.stream_config.num_ch = channels;
+              app_settings.stream_config.codec_instance_size = sizeof(g722_state *);
+          }
+
+          app_settings.rt_stats.microseconds_per_frame = (unsigned)1000000*blocksize/sample_rate;
+          app_settings.rt_stats.used_output_buffer = size;
+      
+      profile_frame_postprocess(&app_settings);
+#endif
+
+#ifdef PROFILING_CODEC_SAMPLES
+      timer0=_timer0_read()-timer0;
+      double number =ceil((double)16000/ read1);
+      if (print_header_decoder)
+      {
+          printf("\nHEADER DECODER: block_size=%d mode=%d \n",read1, mode);
+          print_header_decoder=0;
+      }
+      //double number=10;
+      //printf("timer %d\t mips %.2f \n",(timer0-encoder->private_->time_read),(((double)(timer0-encoder->private_->time_read)*number)/(1000000)));
+      printf("timer_D %d\t D_mips %.2f \t",(timer0),(((double)(timer0)*number)/(1000000)));
+#endif
       /* Test for error */
       if (smpno!=read1)
 	HARAKIRI("Error decoding!\n",10);
     }
 
+#ifdef PROFILING_CODEC_SAMPLES
+    printf("\n");
+#endif
     /* Update sample counter */
     iter += smpno;
 
@@ -431,6 +561,10 @@ char *argv[];
   /* Close input and output files */
   fclose(out);
   fclose(inp);
+
+#ifdef NATIVE_CYCLE_PROFILING
+  profile_postprocess(&app_settings);
+#endif
 
   /* Exit with success for non-vms systems */
 #ifndef VMS

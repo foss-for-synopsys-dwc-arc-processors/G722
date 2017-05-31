@@ -83,7 +83,9 @@ Word32 g722_encode(incode,code,read1,encoder)
   /* Auxiliary variables */
   Word32             i;
   Word16          *p_incode;
-
+#ifdef __FXAPI__
+  fx_init_dsp_mode();
+#endif
   /* Divide sample counter by 2 to account for QMF operation */
   read1 = L_shr(read1, 1);
 
@@ -162,7 +164,9 @@ short g722_decode(code,outcode,mode,read1,decoder)
     
   /* Auxiliary variables */
   short             i;  
-    
+#ifdef __FXAPI__
+  fx_init_dsp_mode();
+#endif  
   /* Decode - reset is never applied here */
   FOR (i = 0; i < read1; i++)
   {

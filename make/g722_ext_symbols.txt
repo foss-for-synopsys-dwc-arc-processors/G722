@@ -1,0 +1,8 @@
+g722_reset_encoder
+g722_reset_decoder
+g722_encode
+g722_decode
+lsbcod
+hsbcod
+lsbdec
+hsbdec
