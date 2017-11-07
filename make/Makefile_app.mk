@@ -95,21 +95,15 @@ all: $(APP_NAME)
 
 ifneq (, $(filter -DG722_ENCODER%, $(CFLAGS)))
 run: 
-#	mdb -cl -run -nsim  -tcf=$(TCF) $(APP_NAME) ..$(PS)testvectors$(PS)g722-ts-le$(PS)bin$(PS)bt1c1.xmt ..$(PS)testvectors$(PS)g722-ts-le$(PS)bin$(PS)bt2r1.cod
 	mdb -run -tcf=$(TCF) g722demo.elf -enc inpsp.bin output.bit -raw_profiling_data enc.prof
-#	
 endif
 
 ifneq (, $(filter -DG722_DECODER%, $(CFLAGS)))
 run: 
-#	mdb -nsim -jit -notrace -cl -run -tcf=$(TCF) $(APP_NAME) ..$(PS)testvectors$(PS)g722-ts-le$(PS)bin$(PS)bt2r1.cod ..$(PS)testvectors$(PS)g722-ts-le$(PS)bin$(PS)bt3l1.rc1 ..$(PS)testvectors$(PS)g722-ts-le$(PS)bin$(PS)bt3h1.rc0
 	mdb -run -tcf=$(TCF) g722demo.elf -dec output.bit output.pcm -raw_profiling_data dec.prof
 endif    
 
 
-ifneq (, $(filter -DG722_DECODER%, $(CFLAGS)))
-	APP_CFLAGS += -DINPUT_CODE_CUSTOM -DUSE_CUSTOM_CMDLINE
-endif
 
 APP_INCLUDE_DIRS_COMMON = \
     ..$(PS)g722 \
