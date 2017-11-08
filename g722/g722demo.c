@@ -356,6 +356,8 @@ char *argv[];
   else
     cod_buf = incode;
 
+  inp_buf = incode;
+
   if (decode)
   {
     g722_reset_decoder(&decoder);
