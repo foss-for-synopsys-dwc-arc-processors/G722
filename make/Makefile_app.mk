@@ -51,10 +51,7 @@ BUILD_DIR   ?= ..$(PS)obj
 
 #################################################
 # Encoder UTA parameters section
-APP_CFLAGS=
-ifeq ($(PROFILE),on)
-    APP_CFLAGS += -DNATIVE_CYCLE_PROFILING
-endif
+override APP_CFLAGS +=
 
 APP_NAME = g722demo.elf
 MINI_APP_NAME = g722_enc_mini.elf
