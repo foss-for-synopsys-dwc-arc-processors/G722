@@ -33,6 +33,13 @@ uint32_t profile_preprocess(Profiler_Settings_t * inst_settings);
 void profile_postprocess(Profiler_Settings_t * inst_settings);
 void profile_pause(Profiler_Settings_t * inst_settings);
 void profile_resume(Profiler_Settings_t * inst_settings);
+
+#ifdef NATIVE_BUSBANDWIDTH_PROFILING
+#if (_ARCVER > 0x42)
+#define MSS_PERFCTRL_MEM_IDX MSS_PERFCTRL_MEM_RGON0_IDX
+#endif
+#endif
+
 #endif
 
 #endif //__TEST_PROFILE_H__

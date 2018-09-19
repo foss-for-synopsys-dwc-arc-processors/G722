@@ -198,10 +198,10 @@ void* mem_alloc(uint32_t size)
     }
 
 #if defined NATIVE_STRESS_TEST || defined NATIVE_CYCLE_PROFILING
-    /*if (settings != NULL) {
+    if (settings != NULL) {
     	settings->memory_stats.heap_usage += _msize(*((void**)((uint32_t)buffer - sizeof(void*))));
     	settings->memory_stats.max_heap_usage = _max(settings->memory_stats.max_heap_usage, settings->memory_stats.heap_usage);
-    }*/
+    }
 #endif
     return buffer;
 } /* mem_alloc */
@@ -221,9 +221,9 @@ void mem_free(void *ptr)
 {
     TEST_ASSERT(ptr != NULL);
 #if defined NATIVE_STRESS_TEST || defined NATIVE_CYCLE_PROFILING
-	/*if (settings != NULL) {
+	if (settings != NULL) {
 		settings->memory_stats.heap_usage -= _msize(*((void**)((uint32_t)ptr - sizeof(void*))));
-	}*/
+	}
 #endif
     free_aligned(ptr);
 } /* mem_free */
