@@ -97,7 +97,9 @@ void display_usage ARGS((void));
 #include "rt_checks.h"
 #endif
 
-
+#ifdef NATIVE_CYCLE_PROFILING
+#include "helper_lib.h"
+#endif
 /*
  -------------------------------------------------------------------------
  void display_usage(void);
@@ -318,6 +320,7 @@ char *argv[];
     KILL(FileOut, -2);
 
 #ifndef STATIC_ALLOCATION
+#ifndef NATIVE_CYCLE_PROFILING
   /* Allocate necessary memory and initialize pointers */
   if (encode && decode)
   {
@@ -344,6 +347,42 @@ char *argv[];
     if (cod_buf==NULL) HARAKIRI("Error alocating bitstream buffer\n",3);
     if (out_buf==NULL) HARAKIRI("Error alocating output buffer\n",3);
   }
+#else
+  /* Allocate necessary memory and initialize pointers */
+  if (encode && decode)
+  {
+    inp_buf = incode = (Word16 *) mem_alloc(N * sizeof(Word16));
+    memset(inp_buf, 0, N * sizeof(Word16) );
+    out_buf = outcode = (Word16 *) mem_alloc(N * sizeof(Word16));
+    memset(out_buf, 0, N * sizeof(Word16) );
+    cod_buf = code = (Word16 *) mem_alloc(N/2 * sizeof(Word16));
+    memset(cod_buf, 0, N/2 * sizeof(Word16) );
+    if (inp_buf==NULL) HARAKIRI("Error alocating input buffer\n",3);
+    if (out_buf==NULL) HARAKIRI("Error alocating output buffer\n",3);
+    if (cod_buf==NULL) HARAKIRI("Error alocating bitstream buffer\n",3);
+  }
+  else if (encode)
+  {
+    /* It is a encode-only operation */
+    inp_buf = incode = (Word16 *) mem_alloc(N * sizeof(Word16));
+    memset(inp_buf, 0, N * sizeof(Word16) );
+    out_buf = cod_buf = code = (Word16 *) mem_alloc(N/2 * sizeof(Word16));
+    memset(out_buf, 0, N/2 * sizeof(Word16) );
+    if (inp_buf==NULL) HARAKIRI("Error alocating input buffer\n",3);
+    if (cod_buf==NULL) HARAKIRI("Error alocating bitstream buffer\n",3);
+  }
+  else
+  {
+    /* It is a decode-only operation */
+    inp_buf = cod_buf = incode = (Word16 *) mem_alloc(N * sizeof(Word16));
+    memset(inp_buf, 0, N * sizeof(Word16) );
+    outcode = out_buf = (Word16 *) mem_alloc(2l*N * sizeof(Word16));
+    memset(out_buf, 0, 2l*N * sizeof(Word16) );
+    if (cod_buf==NULL) HARAKIRI("Error alocating bitstream buffer\n",3);
+    if (out_buf==NULL) HARAKIRI("Error alocating output buffer\n",3);
+  }
+
+#endif
 #endif
 
   /* Reset lower and upper band encoders and define input/output buffers */
@@ -430,7 +469,7 @@ char *argv[];
                 app_settings.stream_config.sample_size = bytes_ps;
                 app_settings.stream_config.bit_rate = 0;
                 app_settings.stream_config.num_ch =channels;
-                app_settings.stream_config.codec_instance_size = sizeof(g722_state *);
+                app_settings.stream_config.codec_instance_size = sizeof(g722_state )*2;
             }
             app_settings.rt_stats.microseconds_per_frame = (unsigned)1000000*blocksize/sample_rate;
             app_settings.rt_stats.used_input_buffer = size;
@@ -501,7 +540,7 @@ char *argv[];
               app_settings.stream_config.sample_size = bytes_ps;
               app_settings.stream_config.bit_rate = 0;
               app_settings.stream_config.num_ch = channels;
-              app_settings.stream_config.codec_instance_size = sizeof(g722_state *);
+              app_settings.stream_config.codec_instance_size = sizeof(g722_state )*2;
           }
 
           app_settings.rt_stats.microseconds_per_frame = (unsigned)1000000*blocksize/sample_rate;
