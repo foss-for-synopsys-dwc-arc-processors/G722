@@ -28,6 +28,13 @@
 #ifdef _ARC
 #if _ARCVER > 0x39 
     #include <arc/arc_reg.h>
+    #include <arc/arc_timer.h>
+    #ifdef NATIVE_BUSBANDWIDTH_PROFILING
+    		#include "helper_lib.h"
+		#ifdef	DCACHE_DISABLED
+			#undef NATIVE_BUSBANDWIDTH_PROFILING
+		#endif
+    #endif
 #else
     #include "platform_lib/arc.h"
 #endif

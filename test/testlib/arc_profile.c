@@ -158,10 +158,8 @@ void print_frame_info(Profiler_Settings_t * inst_settings)
 
 void print_profile_summary(Profiler_Settings_t * inst_settings)
 {
-// Heap and instance are now the same
-//	INFO( "[Codec Instance] Codec instance size: %u bytes",
-//			inst_settings->stream_config.codec_instance_size);
-
+	INFO( "[Codec Instance] Codec instance size: %u bytes",
+			inst_settings->stream_config.codec_instance_size);
 	INFO( "[Stack Usage] Stack usage: %lu bytes",
 			inst_settings->profiling_data.stack2 - inst_settings->profiling_data.stack1);
 	INFO( "[Heap Usage] Current heap usage (leaks): %d bytes.",

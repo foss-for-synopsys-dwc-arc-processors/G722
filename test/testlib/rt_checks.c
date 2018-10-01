@@ -199,7 +199,7 @@ static TEST_BOOL check_dcache_coherent(void *buffer, uint32_t size)
 
 #endif
 
-#ifdef NATIVE_INTERRUPT_TEST
+#if defined(NATIVE_INTERRUPT_TEST) && (core_config_bcr_irq_build_irqs > 0)
 volatile long int_count = 0;
 
 _Interrupt void timer_isr(void)
@@ -323,7 +323,7 @@ void TESTLIB_init(int * pargc, char * argv[])
     }
     INFO("%s", "===");
 
-#ifdef NATIVE_INTERRUPT_TEST
+#if defined(NATIVE_INTERRUPT_TEST) && (core_config_bcr_irq_build_irqs > 0)
      // _RT_Check_EnableTimerInterrupt();
 #endif /* ifdef NATIVE_INTERRUPT_TEST */
 
@@ -343,7 +343,7 @@ TEST_BOOL TESTLIB_frame_preprocess(char *input, uint32_t len)
 	  bb_brake_bits(input, len);
 	}
 #endif
-#ifdef NATIVE_INTERRUPT_TEST
+#if defined(NATIVE_INTERRUPT_TEST) && (core_config_bcr_irq_build_irqs > 0)
      _RT_Check_EnableTimerInterrupt();
 #endif /* ifdef NATIVE_INTERRUPT_TEST */
 
@@ -359,7 +359,7 @@ TEST_BOOL TESTLIB_frame_postprocess(char *output, uint32_t len)
 	}
 #endif
 
-#ifdef NATIVE_INTERRUPT_TEST
+#if defined(NATIVE_INTERRUPT_TEST) && (core_config_bcr_irq_build_irqs > 0)
     _RT_Check_DisableTimerInterrupt();
 #endif /* ifdef NATIVE_INTERRUPT_TEST */
     return TEST_TRUE;
